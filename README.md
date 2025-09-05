@@ -101,6 +101,14 @@ php artisan serve
 
 The API will be available at `http://127.0.0.1:8000`
 
+### 7. Import Postman Collection (Optional)
+```bash
+# Import the provided Postman collection file:
+# - SurveyFeedbackAPI.postman_collection.json
+```
+
+This file contains all API endpoints with proper authentication, examples.
+
 ## 📚 API Documentation
 
 ### Authentication Endpoints

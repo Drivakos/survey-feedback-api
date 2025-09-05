@@ -1,0 +1,284 @@
+{
+  "info": {
+    "name": "Survey Feedback API",
+    "description": "Complete API collection for the Laravel Survey Feedback API with JWT authentication, Redis caching, and rate limiting",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_email",
+      "value": "test@example.com",
+      "type": "string"
+    },
+    {
+      "key": "user_password",
+      "value": "password123",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\",\n  \"password_confirmation\": \"{{user_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "register"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('jwt_token', response.data.token);",
+                  "    console.log('JWT Token saved:', response.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('jwt_token', response.data.token);",
+                  "    console.log('JWT Token saved:', response.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Public Surveys",
+      "item": [
+        {
+          "name": "Get All Active Surveys",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/surveys",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "surveys"
+              ]
+            },
+            "description": "Get paginated list of active surveys. Query parameters are optional and for future implementation."
+          }
+        },
+        {
+          "name": "Get Survey Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/surveys/2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "surveys",
+                "2"
+              ]
+            },
+            "description": "Get detailed information about a specific survey including all questions"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Protected Endpoints",
+      "item": [
+        {
+          "name": "Submit Survey Answers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": [\n    {\n      \"question_id\": 4,\n      \"response\": 5\n    },\n    {\n      \"question_id\": 5,\n      \"response\": \"Excellent service and products!\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/surveys/2/submit",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "surveys",
+                "2",
+                "submit"
+              ]
+            },
+            "description": "Submit answers for survey ID 2. Requires JWT authentication."
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "me"
+              ]
+            },
+            "description": "Get details of the currently authenticated user"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rate Limiting Tests",
+      "item": [
+        {
+          "name": "Test Rate Limit (Run Multiple Times)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/surveys",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "surveys"
+              ]
+            },
+            "description": "Test rate limiting by running this request multiple times quickly. The 61st request should return a 429 status code."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const rateLimit = pm.response.headers.get('X-RateLimit-Limit');",
+                  "const rateRemaining = pm.response.headers.get('X-RateLimit-Remaining');",
+                  "const rateReset = pm.response.headers.get('X-RateLimit-Reset');",
+                  "",
+                  "console.log(`Rate Limit: ${rateLimit}`);",
+                  "console.log(`Remaining: ${rateRemaining}`);",
+                  "console.log(`Reset Time: ${rateReset}`);",
+                  "",
+                  "if (pm.response.code === 429) {",
+                  "    console.log('Rate limit exceeded!');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request script",
+          "console.log('Request URL:', pm.request.url.toString());"
+        ]
+      }
+    }
+  ]
+}
