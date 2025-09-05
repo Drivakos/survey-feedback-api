@@ -19,6 +19,10 @@ class Survey extends Model
         'status' => 'string',
     ];
 
+    protected $attributes = [
+        'status' => 'active',
+    ];
+
     public function questions()
     {
         return $this->hasMany(Question::class);

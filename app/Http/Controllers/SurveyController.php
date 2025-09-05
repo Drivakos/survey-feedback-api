@@ -71,7 +71,7 @@ class SurveyController extends Controller
             ], 404);
         }
 
-        $responder = JWTAuth::user();
+        $responder = auth()->user();
 
         // Validate request structure
         $validator = Validator::make($request->all(), [
@@ -88,8 +88,17 @@ class SurveyController extends Controller
             ], 422);
         }
 
+        // Check for duplicate question IDs in the same submission
+        $submittedQuestionIds = collect($request->answers)->pluck('question_id');
+        if ($submittedQuestionIds->count() !== $submittedQuestionIds->unique()->count()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Duplicate question IDs found in submission'
+            ], 422);
+        }
+
         // Validate that all questions belong to this survey
-        $questionIds = collect($request->answers)->pluck('question_id')->unique();
+        $questionIds = $submittedQuestionIds->unique();
         $validQuestions = $survey->questions()->whereIn('id', $questionIds)->count();
 
         if ($validQuestions !== $questionIds->count()) {
@@ -127,7 +136,7 @@ class SurveyController extends Controller
             $answer = Answer::create([
                 'question_id' => $answerData['question_id'],
                 'responder_id' => $responder->id,
-                'response_data' => json_encode($answerData['response']),
+                'response_data' => $answerData['response'],
             ]);
 
             $savedAnswers[] = $answer;
@@ -152,7 +161,7 @@ class SurveyController extends Controller
      */
     public function me()
     {
-        $responder = JWTAuth::user();
+        $responder = auth()->user();
 
         return response()->json([
             'status' => 'success',
@@ -231,7 +240,7 @@ class SurveyController extends Controller
     {
         switch ($question->type) {
             case 'text':
-                return is_string($response) && strlen($response) > 0;
+                return is_string($response) && strlen($response) > 0 && strlen($response) <= 10000;
 
             case 'scale':
                 return is_numeric($response) && $response >= 1 && $response <= 5;
