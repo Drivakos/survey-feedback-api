@@ -21,7 +21,7 @@ class Responder extends Authenticatable implements JWTSubject
     ];
 
     protected $casts = [
-        'password' => 'hashed',
+        // Password is manually hashed in controller
     ];
 
     public function answers()
