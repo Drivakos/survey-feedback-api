@@ -191,4 +191,72 @@ Authorization: Bearer {jwt_token}
 - Stored in `storage/logs/surveys/` directory
 - Metadata includes IP address and user agent
 
+## 🧪 Testing
+
+### Test Suite Overview
+This project includes a comprehensive test suite with **74 tests** and **353 assertions** covering:
+
+- **Authentication & Authorization** - JWT token handling, user registration/login
+- **Survey Management** - CRUD operations, validation, and business logic
+- **API Endpoints** - All REST endpoints with proper response validation
+- **Security Features** - Rate limiting, input validation, SQL injection prevention
+- **Edge Cases** - Large payloads, unicode characters, concurrent submissions
+- **Data Integrity** - Database constraints, foreign key relationships
+- **Caching & Performance** - Redis caching behavior and invalidation
+
+### Test Organization
+```
+tests/
+├── Feature/          # Integration tests
+│   ├── AuthTest.php         # Authentication endpoints
+│   ├── SurveyTest.php       # Survey CRUD operations
+│   ├── EdgeCaseTest.php     # Edge cases & security
+│   └── RateLimitTest.php    # Rate limiting
+├── Unit/             # Unit tests
+│   ├── Controllers/         # Controller logic
+│   └── Models/              # Model relationships & business logic
+└── TestHelpers/      # Reusable test utilities
+    └── ApiTestHelper.php    # Common testing patterns
+```
+
+### Test Helpers
+The `ApiTestHelper` trait provides reusable methods for:
+- **Authentication**: `createAuthenticatedUser()`
+- **Test Data**: `createSurveyWithQuestions()`, `generateValidAnswers()`
+- **API Testing**: `submitSurveyAnswers()`
+
+### Running Tests
+```bash
+# Run all tests
+php artisan test
+
+# Run specific test suite
+php artisan test --filter=Feature
+php artisan test --filter=SurveyTest
+```
+
+### Test Configuration
+- **Database**: SQLite in-memory for fast execution
+- **Cache**: Array driver for isolation
+- **JWT**: Test-specific secret key
+- **Environment**: Dedicated testing environment
+
+### Test Results
+```bash
+Tests:    74 passed (353 assertions)
+Duration: 2.47s
+```
+
+### Key Test Scenarios
+- ✅ User registration and login flows
+- ✅ Survey creation, listing, and detail retrieval
+- ✅ Answer submission with validation
+- ✅ Rate limiting (60 requests/minute)
+- ✅ Redis caching behavior
+- ✅ JSON logging functionality
+- ✅ Edge cases (large payloads, unicode, SQL injection)
+- ✅ Concurrent submissions prevention
+- ✅ Database constraint validation
+- ✅ Error handling and response formats
+
 ---
