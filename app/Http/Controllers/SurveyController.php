@@ -6,6 +6,7 @@ use App\Models\Answer;
 use App\Models\Question;
 use App\Models\Survey;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -16,9 +17,11 @@ class SurveyController extends Controller
      */
     public function index()
     {
-        $surveys = Survey::active()
-            ->select('id', 'title', 'description')
-            ->get();
+        $surveys = Cache::remember('surveys.active', 3600, function () {
+            return Survey::active()
+                ->select('id', 'title', 'description')
+                ->get();
+        });
 
         return response()->json([
             'status' => 'success',
@@ -32,11 +35,13 @@ class SurveyController extends Controller
      */
     public function show($id)
     {
-        $survey = Survey::active()
-            ->with(['questions' => function($query) {
-                $query->select('id', 'survey_id', 'type', 'question_text');
-            }])
-            ->find($id);
+        $survey = Cache::remember("survey.{$id}", 3600, function () use ($id) {
+            return Survey::active()
+                ->with(['questions' => function($query) {
+                    $query->select('id', 'survey_id', 'type', 'question_text');
+                }])
+                ->find($id);
+        });
 
         if (!$survey) {
             return response()->json([
@@ -128,6 +133,9 @@ class SurveyController extends Controller
             $savedAnswers[] = $answer;
         }
 
+        // Clear cache after successful submission
+        $this->clearSurveyCache($survey->id);
+
         return response()->json([
             'status' => 'success',
             'message' => 'Survey answers submitted successfully',
@@ -150,6 +158,18 @@ class SurveyController extends Controller
             'message' => 'Responder details retrieved successfully',
             'data' => $responder
         ]);
+    }
+
+    /**
+     * Clear survey caches
+     */
+    private function clearSurveyCache($surveyId = null)
+    {
+        Cache::forget('surveys.active');
+
+        if ($surveyId) {
+            Cache::forget("survey.{$surveyId}");
+        }
     }
 
     /**
