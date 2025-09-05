@@ -133,6 +133,7 @@ class SurveyController extends Controller
             $savedAnswers[] = $answer;
         }
 
+        $this->logSurveySubmission($survey, $responder, $savedAnswers);
         // Clear cache after successful submission
         $this->clearSurveyCache($survey->id);
 
@@ -170,6 +171,57 @@ class SurveyController extends Controller
         if ($surveyId) {
             Cache::forget("survey.{$surveyId}");
         }
+    }
+
+    /**
+     * Log survey submission to JSON file
+     */
+    private function logSurveySubmission($survey, $responder, $answers)
+    {
+        $logData = [
+            'timestamp' => now()->toISOString(),
+            'survey' => [
+                'id' => $survey->id,
+                'title' => $survey->title,
+                'description' => $survey->description,
+            ],
+            'responder' => [
+                'id' => $responder->id,
+                'email' => $responder->email,
+            ],
+            'answers' => collect($answers)->map(function ($answer) {
+                return [
+                    'question_id' => $answer->question_id,
+                    'response' => $answer->response_data,
+                    'submitted_at' => $answer->created_at->toISOString(),
+                ];
+            })->toArray(),
+            'metadata' => [
+                'total_questions' => count($answers),
+                'user_agent' => request()->userAgent(),
+                'ip_address' => request()->ip(),
+            ]
+        ];
+
+        $date = now()->format('Y-m-d');
+        $logFile = storage_path("logs/surveys/survey_submissions_{$date}.json");
+
+        // Create directory if it doesn't exist
+        $logDir = dirname($logFile);
+        if (!file_exists($logDir)) {
+            mkdir($logDir, 0755, true);
+        }
+
+        // Append to existing file or create new one
+        $existingLogs = [];
+        if (file_exists($logFile)) {
+            $existingContent = file_get_contents($logFile);
+            $existingLogs = json_decode($existingContent, true) ?? [];
+        }
+
+        $existingLogs[] = $logData;
+
+        file_put_contents($logFile, json_encode($existingLogs, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
     }
 
     /**
