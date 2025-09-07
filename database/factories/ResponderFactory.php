@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Models\Responder;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
 
 class ResponderFactory extends Factory
 {
@@ -14,7 +13,7 @@ class ResponderFactory extends Factory
     {
         return [
             'email' => $this->faker->unique()->safeEmail(),
-            'password' => Hash::make('password123'),
+            'password' => 'password123', // Will be auto-hashed by model mutator
         ];
     }
 }

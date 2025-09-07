@@ -31,7 +31,7 @@ class AuthController extends Controller
 
         $responder = Responder::create([
             'email' => $request->email,
-            'password' => bcrypt($request->password),
+            'password' => $request->password, // Will be auto-hashed by mutator
         ]);
 
         $token = JWTAuth::fromUser($responder);

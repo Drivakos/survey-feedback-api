@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class Responder extends Authenticatable implements JWTSubject
@@ -21,8 +22,18 @@ class Responder extends Authenticatable implements JWTSubject
     ];
 
     protected $casts = [
-        // Password is manually hashed in controller
+        'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * Automatically hash passwords when setting them
+     */
+    public function setPasswordAttribute($value)
+    {
+        if (!empty($value)) {
+            $this->attributes['password'] = Hash::make($value);
+        }
+    }
 
     public function answers()
     {
