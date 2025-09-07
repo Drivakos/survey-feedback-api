@@ -6,9 +6,11 @@ use App\Http\Controllers\SurveyController;
 use App\Models\Question;
 use App\Models\Responder;
 use App\Models\Survey;
+use App\Services\ElasticsearchService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Storage;
+use Mockery;
 use PHPUnit\Framework\Attributes\Test;
 
 class SurveyControllerTest extends TestCase
@@ -18,7 +20,8 @@ class SurveyControllerTest extends TestCase
     #[Test]
     public function survey_controller_can_validate_text_answer_format()
     {
-        $controller = new SurveyController();
+        $elasticsearchMock = Mockery::mock(ElasticsearchService::class);
+        $controller = new SurveyController($elasticsearchMock);
 
         // Valid text answers
         $this->assertTrue($this->callValidateAnswerFormat($controller, 'text', 'Valid answer'));
@@ -32,7 +35,8 @@ class SurveyControllerTest extends TestCase
     #[Test]
     public function survey_controller_can_validate_scale_answer_format()
     {
-        $controller = new SurveyController();
+        $elasticsearchMock = Mockery::mock(ElasticsearchService::class);
+        $controller = new SurveyController($elasticsearchMock);
 
         // Valid scale answers
         for ($i = 1; $i <= 5; $i++) {
@@ -49,7 +53,8 @@ class SurveyControllerTest extends TestCase
     #[Test]
     public function survey_controller_can_validate_multiple_choice_answer_format()
     {
-        $controller = new SurveyController();
+        $elasticsearchMock = Mockery::mock(ElasticsearchService::class);
+        $controller = new SurveyController($elasticsearchMock);
 
         // Valid multiple choice answers
         for ($i = 1; $i <= 5; $i++) {
@@ -63,9 +68,15 @@ class SurveyControllerTest extends TestCase
     }
 
     #[Test]
-    public function survey_controller_logs_survey_submission()
+    public function survey_controller_logs_survey_submission_to_elasticsearch()
     {
-        $controller = new SurveyController();
+        // Mock the ElasticsearchService
+        $elasticsearchMock = Mockery::mock(ElasticsearchService::class);
+        $elasticsearchMock->shouldReceive('logSurveySubmission')
+            ->once()
+            ->andReturn(true);
+
+        $controller = new SurveyController($elasticsearchMock);
         $survey = Survey::factory()->create();
         $responder = Responder::factory()->create();
         $question = Question::factory()->create(['survey_id' => $survey->id]);
@@ -88,28 +99,13 @@ class SurveyControllerTest extends TestCase
 
         // The method should complete without error
         $this->assertNull($result);
-
-        // Check if log file was created (using real filesystem)
-        $date = now()->format('Y-m-d');
-        $logPath = storage_path("logs/surveys/survey_submissions_{$date}.json");
-
-        $this->assertFileExists($logPath);
-
-        $logContent = file_get_contents($logPath);
-        $logData = json_decode($logContent, true);
-
-        // Get the last entry (most recent)
-        $lastEntry = end($logData);
-
-        $this->assertEquals($survey->id, $lastEntry['survey']['id']);
-        $this->assertEquals($responder->id, $lastEntry['responder']['id']);
-        $this->assertCount(1, $lastEntry['answers']);
     }
 
     #[Test]
     public function survey_controller_clears_cache_correctly()
     {
-        $controller = new SurveyController();
+        $elasticsearchMock = Mockery::mock(ElasticsearchService::class);
+        $controller = new SurveyController($elasticsearchMock);
         $survey = Survey::factory()->create();
 
         // Call the private method using reflection

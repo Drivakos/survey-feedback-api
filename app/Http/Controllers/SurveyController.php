@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Answer;
 use App\Models\Question;
 use App\Models\Survey;
+use App\Services\ElasticsearchService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
@@ -12,6 +13,13 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class SurveyController extends Controller
 {
+    protected ElasticsearchService $elasticsearch;
+
+    public function __construct(ElasticsearchService $elasticsearch)
+    {
+        $this->elasticsearch = $elasticsearch;
+    }
+    
     /**
      * Get all active surveys
      */
@@ -183,9 +191,9 @@ class SurveyController extends Controller
     }
 
     /**
-     * Log survey submission to JSON file
+     * Log survey submission to Elasticsearch
      */
-    private function logSurveySubmission($survey, $responder, $answers)
+    private function logSurveySubmission($survey, $responder, $answers): void
     {
         $logData = [
             'timestamp' => now()->toISOString(),
@@ -212,25 +220,8 @@ class SurveyController extends Controller
             ]
         ];
 
-        $date = now()->format('Y-m-d');
-        $logFile = storage_path("logs/surveys/survey_submissions_{$date}.json");
-
-        // Create directory if it doesn't exist
-        $logDir = dirname($logFile);
-        if (!file_exists($logDir)) {
-            mkdir($logDir, 0755, true);
-        }
-
-        // Append to existing file or create new one
-        $existingLogs = [];
-        if (file_exists($logFile)) {
-            $existingContent = file_get_contents($logFile);
-            $existingLogs = json_decode($existingContent, true) ?? [];
-        }
-
-        $existingLogs[] = $logData;
-
-        file_put_contents($logFile, json_encode($existingLogs, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        // Log to Elasticsearch with fallback to file if unavailable
+        $this->elasticsearch->logSurveySubmission($logData);
     }
 
     /**
