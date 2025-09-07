@@ -7,12 +7,13 @@ use App\Models\Question;
 use App\Models\Survey;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class QuestionTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function question_has_fillable_attributes()
     {
         $survey = Survey::factory()->create();
@@ -27,7 +28,7 @@ class QuestionTest extends TestCase
         $this->assertEquals('What is your feedback?', $question->question_text);
     }
 
-    /** @test */
+    #[Test]
     public function question_belongs_to_survey()
     {
         $survey = Survey::factory()->create();
@@ -37,7 +38,7 @@ class QuestionTest extends TestCase
         $this->assertEquals($survey->id, $question->survey->id);
     }
 
-    /** @test */
+    #[Test]
     public function question_has_answers_relationship()
     {
         $question = Question::factory()->create();
@@ -48,7 +49,7 @@ class QuestionTest extends TestCase
         $this->assertEquals($answer->id, $question->answers->first()->id);
     }
 
-    /** @test */
+    #[Test]
     public function question_valid_types()
     {
         $survey = Survey::factory()->create();

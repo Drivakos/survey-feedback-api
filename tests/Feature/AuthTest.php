@@ -6,12 +6,14 @@ use App\Models\Responder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class AuthTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function user_can_register()
     {
         $userData = [
@@ -37,7 +39,7 @@ class AuthTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function registration_requires_valid_email()
     {
         $userData = [
@@ -52,7 +54,7 @@ class AuthTest extends TestCase
                 ->assertJsonValidationErrors(['email']);
     }
 
-    /** @test */
+    #[Test]
     public function registration_requires_password_confirmation()
     {
         $userData = [
@@ -67,12 +69,12 @@ class AuthTest extends TestCase
                 ->assertJsonValidationErrors(['password']);
     }
 
-    /** @test */
+    #[Test]
     public function user_can_login_with_valid_credentials()
     {
         $user = Responder::factory()->create([
             'email' => 'test@example.com',
-            'password' => bcrypt('password123')
+            'password' => 'password123' // Will be auto-hashed by model mutator
         ]);
 
         $loginData = [
@@ -93,7 +95,7 @@ class AuthTest extends TestCase
                 ]);
     }
 
-    /** @test */
+    #[Test]
     public function login_fails_with_invalid_credentials()
     {
         $loginData = [
@@ -110,7 +112,7 @@ class AuthTest extends TestCase
                 ]);
     }
 
-    /** @test */
+    #[Test]
     public function email_must_be_unique_during_registration()
     {
         Responder::factory()->create(['email' => 'test@example.com']);
@@ -127,7 +129,7 @@ class AuthTest extends TestCase
                 ->assertJsonValidationErrors(['email']);
     }
 
-    /** @test */
+    #[Test]
     public function registration_requires_all_fields()
     {
         $response = $this->postJson('/api/register', []);
@@ -139,6 +141,7 @@ class AuthTest extends TestCase
     /**
      * Data provider for invalid email formats
      */
+    #[DataProvider('invalidEmailProvider')]
     public static function invalidEmailProvider(): array
     {
         return [
@@ -151,10 +154,8 @@ class AuthTest extends TestCase
         ];
     }
 
-    /**
-     * @test
-     * @dataProvider invalidEmailProvider
-     */
+    #[Test]
+    #[DataProvider('invalidEmailProvider')]
     public function registration_validates_email_format($invalidEmail)
     {
         $userData = [
@@ -172,6 +173,7 @@ class AuthTest extends TestCase
     /**
      * Data provider for password validation
      */
+    #[DataProvider('invalidPasswordProvider')]
     public static function invalidPasswordProvider(): array
     {
         return [
@@ -182,10 +184,8 @@ class AuthTest extends TestCase
         ];
     }
 
-    /**
-     * @test
-     * @dataProvider invalidPasswordProvider
-     */
+    #[Test]
+    #[DataProvider('invalidPasswordProvider')]
     public function registration_validates_password_requirements($password, $confirmation)
     {
         $userData = [

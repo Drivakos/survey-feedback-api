@@ -10,12 +10,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 use Tests\TestHelpers\ApiTestHelper;
+use PHPUnit\Framework\Attributes\Test;
 
 class EdgeCaseTest extends TestCase
 {
     use RefreshDatabase, ApiTestHelper;
 
-    /** @test */
+    #[Test]
     public function handles_concurrent_survey_submissions()
     {
         $user = $this->createAuthenticatedUser();
@@ -35,7 +36,7 @@ class EdgeCaseTest extends TestCase
                   ]);
     }
 
-    /** @test */
+    #[Test]
     public function handles_malformed_json_requests()
     {
         $this->createAuthenticatedUser();
@@ -45,7 +46,7 @@ class EdgeCaseTest extends TestCase
         $this->assertTrue(true);
     }
 
-    /** @test */
+    #[Test]
     public function handles_extremely_large_text_responses()
     {
         $user = $this->createAuthenticatedUser();
@@ -68,7 +69,7 @@ class EdgeCaseTest extends TestCase
         $response->assertStatus(201);
     }
 
-    /** @test */
+    #[Test]
     public function handles_unicode_characters_in_responses()
     {
         $user = $this->createAuthenticatedUser();
@@ -99,7 +100,7 @@ class EdgeCaseTest extends TestCase
         $this->assertStringContainsString('\\u4e16\\u754c', $answer->response_data); // Escaped unicode
     }
 
-    /** @test */
+    #[Test]
     public function handles_database_constraint_violations()
     {
         $user = $this->createAuthenticatedUser();
@@ -114,7 +115,7 @@ class EdgeCaseTest extends TestCase
         $response->assertStatus(422);
     }
 
-    /** @test */
+    #[Test]
     public function handles_empty_answers_array()
     {
         $user = $this->createAuthenticatedUser();
@@ -125,7 +126,7 @@ class EdgeCaseTest extends TestCase
                 ->assertJsonValidationErrors(['answers']);
     }
 
-    /** @test */
+    #[Test]
     public function handles_duplicate_question_ids_in_same_submission()
     {
         $user = $this->createAuthenticatedUser();
@@ -144,7 +145,7 @@ class EdgeCaseTest extends TestCase
         $response->assertStatus(422);
     }
 
-    /** @test */
+    #[Test]
     public function handles_rate_limit_boundary_conditions()
     {
         // Make exactly 60 requests (the limit)
@@ -160,7 +161,7 @@ class EdgeCaseTest extends TestCase
         $response->assertStatus(429);
     }
 
-    /** @test */
+    #[Test]
     public function handles_cache_invalidation_properly()
     {
         $survey = Survey::factory()->create(['status' => 'active']);
@@ -178,7 +179,7 @@ class EdgeCaseTest extends TestCase
         $this->assertFalse(Cache::has("survey.{$survey->id}"));
     }
 
-    /** @test */
+    #[Test]
     public function handles_sql_injection_attempts()
     {
         $user = $this->createAuthenticatedUser();
@@ -205,7 +206,7 @@ class EdgeCaseTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function handles_extreme_boundary_values()
     {
         $user = $this->createAuthenticatedUser();
@@ -249,7 +250,7 @@ class EdgeCaseTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function handles_network_timeout_simulation()
     {
         $user = $this->createAuthenticatedUser();
@@ -264,7 +265,7 @@ class EdgeCaseTest extends TestCase
         $response->assertStatus(201);
     }
 
-    /** @test */
+    #[Test]
     public function handles_memory_intensive_operations()
     {
         $user = $this->createAuthenticatedUser();

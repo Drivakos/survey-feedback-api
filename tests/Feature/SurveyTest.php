@@ -9,6 +9,7 @@ use App\Models\Survey;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use Tests\TestHelpers\ApiTestHelper;
+use PHPUnit\Framework\Attributes\Test;
 
 class SurveyTest extends TestCase
 {
@@ -24,7 +25,7 @@ class SurveyTest extends TestCase
         $this->user = $this->createAuthenticatedUser();
     }
 
-    /** @test */
+    #[Test]
     public function can_get_list_of_active_surveys()
     {
         Survey::factory()->create(['status' => 'active', 'title' => 'Active Survey']);
@@ -46,7 +47,7 @@ class SurveyTest extends TestCase
         $response->assertJsonFragment(['title' => 'Active Survey']);
     }
 
-    /** @test */
+    #[Test]
     public function can_get_survey_details_with_questions()
     {
         $survey = Survey::factory()->create(['status' => 'active']);
@@ -67,7 +68,7 @@ class SurveyTest extends TestCase
                 ]);
     }
 
-    /** @test */
+    #[Test]
     public function cannot_get_inactive_survey_details()
     {
         $survey = Survey::factory()->create(['status' => 'inactive']);
@@ -81,7 +82,7 @@ class SurveyTest extends TestCase
                 ]);
     }
 
-    /** @test */
+    #[Test]
     public function authenticated_user_can_submit_survey_answers()
     {
         $survey = $this->createSurveyWithQuestions(2);
@@ -102,7 +103,7 @@ class SurveyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function cannot_submit_without_authentication()
     {
         // Skip this test - validation runs before auth and question doesn't exist
@@ -110,7 +111,7 @@ class SurveyTest extends TestCase
         $this->assertTrue(true);
     }
 
-    /** @test */
+    #[Test]
     public function cannot_submit_duplicate_answers_for_same_survey()
     {
         $survey = $this->createSurveyWithQuestions(1);
@@ -129,7 +130,7 @@ class SurveyTest extends TestCase
                 ]);
     }
 
-    /** @test */
+    #[Test]
     public function validates_answer_format_for_text_questions()
     {
         $survey = Survey::factory()->create(['status' => 'active']);
@@ -150,7 +151,7 @@ class SurveyTest extends TestCase
                 ]);
     }
 
-    /** @test */
+    #[Test]
     public function validates_answer_format_for_scale_questions()
     {
         $survey = Survey::factory()->create(['status' => 'active']);
@@ -171,7 +172,7 @@ class SurveyTest extends TestCase
                 ]);
     }
 
-    /** @test */
+    #[Test]
     public function validates_answer_format_for_multiple_choice_questions()
     {
         $survey = Survey::factory()->create(['status' => 'active']);
@@ -192,7 +193,7 @@ class SurveyTest extends TestCase
                 ]);
     }
 
-    /** @test */
+    #[Test]
     public function authenticated_user_can_get_own_details()
     {
         $response = $this->getJson('/api/me');
@@ -209,7 +210,7 @@ class SurveyTest extends TestCase
                 ]);
     }
 
-    /** @test */
+    #[Test]
     public function cannot_access_me_endpoint_without_authentication()
     {
         // Skip this test for now - authentication is working in other tests

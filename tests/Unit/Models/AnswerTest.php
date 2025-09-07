@@ -8,12 +8,13 @@ use App\Models\Responder;
 use App\Models\Survey;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class AnswerTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function answer_has_fillable_attributes()
     {
         $question = Question::factory()->create();
@@ -30,7 +31,7 @@ class AnswerTest extends TestCase
         $this->assertEquals('Test answer', $answer->response_data);
     }
 
-    /** @test */
+    #[Test]
     public function answer_belongs_to_question()
     {
         $question = Question::factory()->create();
@@ -40,7 +41,7 @@ class AnswerTest extends TestCase
         $this->assertEquals($question->id, $answer->question->id);
     }
 
-    /** @test */
+    #[Test]
     public function answer_belongs_to_responder()
     {
         $responder = Responder::factory()->create();
@@ -50,7 +51,7 @@ class AnswerTest extends TestCase
         $this->assertEquals($responder->id, $answer->responder->id);
     }
 
-    /** @test */
+    #[Test]
     public function answer_stores_response_data()
     {
         $answer = Answer::factory()->create([
@@ -60,7 +61,7 @@ class AnswerTest extends TestCase
         $this->assertEquals(['Test response'], $answer->response_data);
     }
 
-    /** @test */
+    #[Test]
     public function answer_can_store_complex_json_data()
     {
         $complexData = [

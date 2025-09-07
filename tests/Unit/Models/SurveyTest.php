@@ -6,12 +6,13 @@ use App\Models\Question;
 use App\Models\Survey;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class SurveyTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function survey_has_fillable_attributes()
     {
         $survey = Survey::create([
@@ -25,7 +26,7 @@ class SurveyTest extends TestCase
         $this->assertEquals('active', $survey->status);
     }
 
-    /** @test */
+    #[Test]
     public function survey_has_questions_relationship()
     {
         $survey = Survey::factory()->create();
@@ -36,7 +37,7 @@ class SurveyTest extends TestCase
         $this->assertEquals($question->id, $survey->questions->first()->id);
     }
 
-    /** @test */
+    #[Test]
     public function survey_scope_active_returns_only_active_surveys()
     {
         Survey::factory()->create(['status' => 'active']);
@@ -51,7 +52,7 @@ class SurveyTest extends TestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function survey_status_defaults_to_active()
     {
         $survey = Survey::create([

@@ -9,12 +9,13 @@ use App\Models\Survey;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Storage;
+use PHPUnit\Framework\Attributes\Test;
 
 class SurveyControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function survey_controller_can_validate_text_answer_format()
     {
         $controller = new SurveyController();
@@ -28,7 +29,7 @@ class SurveyControllerTest extends TestCase
         $this->assertFalse($this->callValidateAnswerFormat($controller, 'text', null));
     }
 
-    /** @test */
+    #[Test]
     public function survey_controller_can_validate_scale_answer_format()
     {
         $controller = new SurveyController();
@@ -45,7 +46,7 @@ class SurveyControllerTest extends TestCase
         $this->assertFalse($this->callValidateAnswerFormat($controller, 'scale', 'invalid'));
     }
 
-    /** @test */
+    #[Test]
     public function survey_controller_can_validate_multiple_choice_answer_format()
     {
         $controller = new SurveyController();
@@ -61,7 +62,7 @@ class SurveyControllerTest extends TestCase
         $this->assertFalse($this->callValidateAnswerFormat($controller, 'multiple_choice', 'invalid'));
     }
 
-    /** @test */
+    #[Test]
     public function survey_controller_logs_survey_submission()
     {
         $controller = new SurveyController();
@@ -105,7 +106,7 @@ class SurveyControllerTest extends TestCase
         $this->assertCount(1, $lastEntry['answers']);
     }
 
-    /** @test */
+    #[Test]
     public function survey_controller_clears_cache_correctly()
     {
         $controller = new SurveyController();

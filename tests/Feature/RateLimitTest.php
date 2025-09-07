@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class RateLimitTest extends TestCase
 {
@@ -17,7 +18,7 @@ class RateLimitTest extends TestCase
         Cache::flush();
     }
 
-    /** @test */
+    #[Test]
     public function allows_requests_within_rate_limit()
     {
         for ($i = 1; $i <= 60; $i++) {
@@ -29,7 +30,7 @@ class RateLimitTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function blocks_requests_over_rate_limit()
     {
         // Make 61 requests (1 over the limit)
@@ -51,7 +52,7 @@ class RateLimitTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function includes_rate_limit_headers_in_response()
     {
         $response = $this->getJson('/api/surveys');
@@ -62,7 +63,7 @@ class RateLimitTest extends TestCase
                 ->assertHeader('X-RateLimit-Reset');
     }
 
-    /** @test */
+    #[Test]
     public function includes_retry_after_header_when_rate_limited()
     {
         // Make 61 requests to trigger rate limit
@@ -76,7 +77,7 @@ class RateLimitTest extends TestCase
                 ->assertHeader('X-RateLimit-Remaining', '0');
     }
 
-    /** @test */
+    #[Test]
     public function rate_limit_applies_to_all_endpoints()
     {
         $endpoints = [
@@ -104,7 +105,7 @@ class RateLimitTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function rate_limit_resets_after_time_window()
     {
         // Make maximum requests
